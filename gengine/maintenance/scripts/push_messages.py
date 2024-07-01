@@ -21,10 +21,10 @@ from pyramid.paster import (
 from pyramid.scripts.common import parse_vars
 from sqlalchemy import engine_from_config
 
+
 def usage(argv):
     cmd = os.path.basename(argv[0])
-    print('usage: %s <config_uri> [var=value]\n'
-          '(example: "%s production.ini")' % (cmd, cmd))
+    print("usage: %s <config_uri> [var=value]\n" '(example: "%s production.ini")' % (cmd, cmd))
     sys.exit(1)
 
 
@@ -37,38 +37,36 @@ def main(argv=sys.argv):
     settings = get_appsettings(config_uri, options=options)
 
     from gengine.base.settings import set_settings
+
     set_settings(settings)
 
     durl = os.environ.get("DATABASE_URL")  # heroku
     if durl:
-        settings['sqlalchemy.url'] = durl
+        settings["sqlalchemy.url"] = durl
 
     murl = os.environ.get("MEMCACHED_URL")
     if murl:
-        settings['urlcache_url'] = murl
+        settings["urlcache_url"] = murl
 
-    engine = engine_from_config(settings, 'sqlalchemy.')
+    engine = engine_from_config(settings, "sqlalchemy.")
 
     config = Configurator(settings=settings)
     pyramid_dogpile_cache.includeme(config)
 
-    from gengine.metadata import (
-        init_session,
-        init_declarative_base,
-        init_db
-    )
+    from gengine.metadata import init_session, init_declarative_base, init_db
+
     init_session()
     init_declarative_base()
     init_db(engine)
     init_caches()
 
-    from gengine.metadata import (
-        DBSession
-    )
+    from gengine.metadata import DBSession
+
     sess = DBSession()
     init_session(override_session=sess, replace=True)
 
     import gengine.app.model as m
+
     with transaction.manager:
         mark_changed(sess, transaction.manager, True)
 

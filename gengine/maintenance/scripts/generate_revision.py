@@ -12,10 +12,13 @@ from pyramid.paster import (
 from pyramid.scripts.common import parse_vars
 from sqlalchemy import engine_from_config
 
+
 def usage(argv):
     cmd = os.path.basename(argv[0])
-    print('usage: %s <config_uri> <message> [var=value]\n'
-          '(example: "%s production.ini new_table_xy_created")' % (cmd, cmd))
+    print(
+        "usage: %s <config_uri> <message> [var=value]\n"
+        '(example: "%s production.ini new_table_xy_created")' % (cmd, cmd)
+    )
     sys.exit(1)
 
 
@@ -30,31 +33,29 @@ def main(argv=sys.argv):
 
     durl = os.environ.get("DATABASE_URL")  # heroku
     if durl:
-        settings['sqlalchemy.url'] = durl
+        settings["sqlalchemy.url"] = durl
 
     murl = os.environ.get("MEMCACHED_URL")
     if murl:
-        settings['urlcache_url'] = murl
+        settings["urlcache_url"] = murl
 
     revision(settings, message, options)
 
 
 def revision(settings, message, options):
-    engine = engine_from_config(settings, 'sqlalchemy.')
+    engine = engine_from_config(settings, "sqlalchemy.")
 
     config = Configurator(settings=settings)
     pyramid_dogpile_cache.includeme(config)
 
-    from gengine.metadata import (
-        init_session,
-        init_declarative_base,
-        init_db
-    )
+    from gengine.metadata import init_session, init_declarative_base, init_db
+
     init_session()
     init_declarative_base()
     init_db(engine)
 
     from gengine.app.cache import init_caches
+
     init_caches()
 
     from gengine.metadata import (
@@ -70,19 +71,17 @@ def revision(settings, message, options):
     from alembic.config import Config
     from alembic import command
 
-    alembic_cfg = Config(attributes={
-        'engine': engine,
-        'schema': 'public'
-    })
+    alembic_cfg = Config(attributes={"engine": engine, "schema": "public"})
     script_location = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-        'app/alembic'
+        "app/alembic",
     )
     alembic_cfg.set_main_option("script_location", script_location)
 
-    command.revision(alembic_cfg,message,True)
+    command.revision(alembic_cfg, message, True)
 
     engine.dispose()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

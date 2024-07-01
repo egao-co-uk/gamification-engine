@@ -1,5 +1,5 @@
 from gengine.app.tests.base import BaseDBTest
-from gengine.app.tests.helpers import create_user, create_variable,create_value
+from gengine.app.tests.helpers import create_user, create_variable, create_value
 from gengine.app.model import Value
 
 

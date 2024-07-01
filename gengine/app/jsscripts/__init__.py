@@ -6,8 +6,10 @@ from gengine.base.settings import get_settings
 from gengine.base.util import lstrip_word
 from pyramid.settings import asbool
 
+
 def includeme(config):
-    config.add_static_view(name='admin/jsstatic', path='gengine:app/jsscripts/build/static')
+    config.add_static_view(name="admin/jsstatic", path="gengine:app/jsscripts/build/static")
+
 
 def get_jsmain():
     debug = asbool(get_settings().get("load_from_webpack_dev_server", False))
@@ -19,9 +21,10 @@ def get_jsmain():
         buildpath = os.path.join(modpath, "build")
         with open(os.path.join(buildpath, "asset-manifest.json"), "r") as f:
             manifest = json.load(f)
-            return "/admin/jsstatic/"+lstrip_word(manifest["main.js"], "static/")
+            return "/admin/jsstatic/" + lstrip_word(manifest["main.js"], "static/")
 
         return None
+
 
 def get_cssmain():
     debug = asbool(get_settings().get("load_from_webpack_dev_server", False))
@@ -33,6 +36,6 @@ def get_cssmain():
         buildpath = os.path.join(modpath, "build")
         with open(os.path.join(buildpath, "asset-manifest.json"), "r") as f:
             manifest = json.load(f)
-            return "/admin/jsstatic/"+lstrip_word(manifest["main.css"],"static/")
+            return "/admin/jsstatic/" + lstrip_word(manifest["main.css"], "static/")
 
         return None

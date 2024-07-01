@@ -44,7 +44,7 @@ desc_global_register_device = "(Admin) Register devices for any subject"
 perm_own_register_device = "own_register_device"
 desc_own_register_device = "Register devices for myself"
 
-perm_global_read_messages= "global_read_messages"
+perm_global_read_messages = "global_read_messages"
 desc_global_read_messages = "(Admin) Read messages of all subjects"
 
 perm_own_read_messages = "own_read_messages"
@@ -54,4 +54,4 @@ desc_own_read_messages = "Read own messages"
 def yield_all_perms():
     for k, v in globals().items():
         if k.startswith("perm_"):
-            yield (v, globals().get("desc_"+k.lstrip("perm_"), k))
+            yield (v, globals().get("desc_" + k.lstrip("perm_"), k))

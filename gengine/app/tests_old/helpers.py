@@ -1,14 +1,31 @@
 import random
 import datetime
 
-from gengine.app.model import User, Language, Achievement,Goal, Variable, Value, t_goals, GoalProperty, GoalGoalProperty, TranslationVariable, \
-    t_goals_goalproperties, t_users, GoalEvaluationCache, Reward, AchievementReward, AchievementSubject
+from gengine.app.model import (
+    User,
+    Language,
+    Achievement,
+    Goal,
+    Variable,
+    Value,
+    t_goals,
+    GoalProperty,
+    GoalGoalProperty,
+    TranslationVariable,
+    t_goals_goalproperties,
+    t_users,
+    GoalEvaluationCache,
+    Reward,
+    AchievementReward,
+    AchievementSubject,
+)
 from gengine.metadata import DBSession
 
 from gengine.app.model import UserDevice, t_user_device
 from sqlalchemy import and_, select
 
 import logging
+
 log = logging.getLogger(__name__)
 
 try:
@@ -17,75 +34,65 @@ except ImportError as e:
     log.info("names not installed")
 
 default_gen_data = {
-    "timezone" : "Europe/Berlin",
-    "area" : {
-        "min_lat" : 51.65,
-        "max_lat" : 51.75,
-        "min_lng" : 8.70,
-        "max_lng" : 8.79
-    },
-    #"country" : "DE",
-    #"region" : "NRW",
-    #"city" : "Paderborn",
-    "language" : "de",
-    "additional_public_data" : {
-        "first_name" : "Matthew",
-        "last_name" : "Hayden"
-    }
+    "timezone": "Europe/Berlin",
+    "area": {"min_lat": 51.65, "max_lat": 51.75, "min_lng": 8.70, "max_lng": 8.79},
+    # "country" : "DE",
+    # "region" : "NRW",
+    # "city" : "Paderborn",
+    "language": "de",
+    "additional_public_data": {"first_name": "Matthew", "last_name": "Hayden"},
 }
 
 alt_gen_data = {
-    "timezone" : "US/Eastern",
-    "area" : {
-        "min_lat" : 40.680,
-        "max_lat" : 40.780,
-        "min_lng" : -73.89,
-        "max_lng" : -73.97
-    }
+    "timezone": "US/Eastern",
+    "area": {
+        "min_lat": 40.680,
+        "max_lat": 40.780,
+        "min_lng": -73.89,
+        "max_lng": -73.97,
+    },
 }
 
 default_device_data = {
-    "device_os" : "iOS 5",
-    "app_version" : "1.1",
-    "push_id" : "5678",
-    "device_id" : "1234"
+    "device_os": "iOS 5",
+    "app_version": "1.1",
+    "push_id": "5678",
+    "device_id": "1234",
 }
 
 
-class Undefined():
+class Undefined:
     pass
+
 
 undefined = Undefined()
 
 
-def randrange_float(f1,f2):
-    return random.random() * abs(f1 - f2) + min(f1,f2)
+def randrange_float(f1, f2):
+    return random.random() * abs(f1 - f2) + min(f1, f2)
 
 
 def create_user(
-        user_id = undefined,
-        lat = undefined,
-        lng = undefined,
-        country = undefined,
-        region = undefined,
-        city = undefined,
-        timezone = undefined,
-        language = undefined,
-        friends = [],
-        groups = [],
-        additional_public_data = undefined,
-        gen_data = default_gen_data
-    ):
+    user_id=undefined,
+    lat=undefined,
+    lng=undefined,
+    country=undefined,
+    region=undefined,
+    city=undefined,
+    timezone=undefined,
+    language=undefined,
+    friends=[],
+    groups=[],
+    additional_public_data=undefined,
+    gen_data=default_gen_data,
+):
     if additional_public_data is undefined:
-        additional_public_data = {
-            'first_name' : 'Stefan',
-            'last_name' : 'Rogers'
-        }
+        additional_public_data = {"first_name": "Stefan", "last_name": "Rogers"}
 
     if user_id is undefined:
         user_id = (DBSession.execute("SELECT max(id) as c FROM users").scalar() or 0) + 1
     if lat is undefined:
-        lat = randrange_float(gen_data["area"]["min_lat"],gen_data["area"]["max_lat"])
+        lat = randrange_float(gen_data["area"]["min_lat"], gen_data["area"]["max_lat"])
 
     if lng is undefined:
         lng = randrange_float(gen_data["area"]["min_lng"], gen_data["area"]["max_lng"])
@@ -93,71 +100,75 @@ def create_user(
     if timezone is undefined:
         timezone = gen_data["timezone"]
 
-    #if country is undefined:
+    # if country is undefined:
     #    country = gen_data["country"]
 
-    #if region is undefined:
+    # if region is undefined:
     #    region = gen_data["region"]
 
-    #if city is undefined:
+    # if city is undefined:
     #    city = gen_data["city"]
 
     if language is undefined:
         language = gen_data["language"]
 
     User.set_infos(
-        user_id = user_id,
-        lat = lat,
-        lng = lng,
-        timezone = timezone,
-        language = language,
-        groups = groups,
-        friends = friends,
-        additional_public_data = additional_public_data
+        user_id=user_id,
+        lat=lat,
+        lng=lng,
+        timezone=timezone,
+        language=language,
+        groups=groups,
+        friends=friends,
+        additional_public_data=additional_public_data,
     )
 
     return User.get_user(user_id)
 
 
-def update_user( 
-        user_id = undefined,
-        lat = undefined,
-        lng = undefined,
-        #country = undefined,
-        #region = undefined,
-        #city = undefined,
-        timezone = undefined,
-        language = undefined,
-        friends = [],
-        groups = [],
-        additional_public_data = undefined,
-    ):
-
+def update_user(
+    user_id=undefined,
+    lat=undefined,
+    lng=undefined,
+    # country = undefined,
+    # region = undefined,
+    # city = undefined,
+    timezone=undefined,
+    language=undefined,
+    friends=[],
+    groups=[],
+    additional_public_data=undefined,
+):
     User.set_infos(
-        user_id = user_id,
-        lat = lat,
-        lng = lng,
-        timezone = timezone,
-        #country = country,
-        #region = region,
-        #city = city,
-        language = language,
-        groups = groups,
-        friends = friends,
-        additional_public_data = additional_public_data
+        user_id=user_id,
+        lat=lat,
+        lng=lng,
+        timezone=timezone,
+        # country = country,
+        # region = region,
+        # city = city,
+        language=language,
+        groups=groups,
+        friends=friends,
+        additional_public_data=additional_public_data,
     )
 
     return User.get_user(user_id)
 
 
-def delete_user( 
-        user_id = undefined,
-    ):
-
+def delete_user(
+    user_id=undefined,
+):
     User.delete_user(user_id)
-    users = DBSession.execute(select([t_users.c.id,])).fetchall()
+    users = DBSession.execute(
+        select(
+            [
+                t_users.c.id,
+            ]
+        )
+    ).fetchall()
     return users
-    
+
 
 def get_or_create_language(name):
     lang = DBSession.query(Language).filter_by(name=name).first()
@@ -170,14 +181,13 @@ def get_or_create_language(name):
 
 
 def create_device(
-        user_id=undefined,
-        device_id=undefined,
-        device_os=undefined,
-        push_id=undefined,
-        app_version=undefined,
-        gen_data=default_device_data
-    ):
-
+    user_id=undefined,
+    device_id=undefined,
+    device_os=undefined,
+    push_id=undefined,
+    app_version=undefined,
+    gen_data=default_device_data,
+):
     if push_id is undefined:
         push_id = gen_data["push_id"]
 
@@ -191,58 +201,66 @@ def create_device(
         device_id = gen_data["device_id"]
 
     UserDevice.add_or_update_device(
-        device_id = device_id,
-        user_id = user_id,
-        device_os = device_os,
-        push_id = push_id,
-        app_version = app_version
+        device_id=device_id,
+        user_id=user_id,
+        device_os=device_os,
+        push_id=push_id,
+        app_version=app_version,
     )
 
-    device = DBSession.execute(t_user_device.select().where(and_(
-            t_user_device.c.device_id == device_id,
-            t_user_device.c.user_id == user_id
-        ))).fetchone()
+    device = DBSession.execute(
+        t_user_device.select().where(
+            and_(
+                t_user_device.c.device_id == device_id,
+                t_user_device.c.user_id == user_id,
+            )
+        )
+    ).fetchone()
 
     return device
 
 
 def update_device(
-        user_id=undefined,
-        device_id=undefined,
-        device_os=undefined,
-        push_id=undefined,
-        app_version=undefined,
-    ):
+    user_id=undefined,
+    device_id=undefined,
+    device_os=undefined,
+    push_id=undefined,
+    app_version=undefined,
+):
     UserDevice.add_or_update_device(
         device_id=device_id,
         user_id=user_id,
         device_os=device_os,
         push_id=push_id,
-        app_version=app_version
+        app_version=app_version,
     )
 
-    device = DBSession.execute(t_user_device.select().where(and_(
-        t_user_device.c.device_id == device_id,
-        t_user_device.c.user_id == user_id
-    ))).fetchone()
+    device = DBSession.execute(
+        t_user_device.select().where(
+            and_(
+                t_user_device.c.device_id == device_id,
+                t_user_device.c.user_id == user_id,
+            )
+        )
+    ).fetchone()
 
     return device
 
 
 def create_achievement(
-        achievement_name = undefined,
-        achievement_valid_start = undefined,
-        achievement_valid_end = undefined,
-        achievement_lat = undefined,
-        achievement_lng = undefined,
-        achievement_max_distance = undefined,
-        achievement_evaluation = undefined,
-        achievement_relevance = undefined,
-        achievement_maxlevel = undefined,
-        achievement_view_permission = undefined,
-        achievement_evaluation_shift = undefined,
-        achievement_evaluation_timezone = undefined,
-    ):
+    achievement_name=undefined,
+    achievement_valid_start=undefined,
+    achievement_valid_end=undefined,
+    achievement_lat=undefined,
+    achievement_lng=undefined,
+    achievement_max_distance=undefined,
+    achievement_evaluation=undefined,
+    achievement_relevance=undefined,
+    achievement_maxlevel=undefined,
+    achievement_view_permission=undefined,
+    achievement_evaluation_shift=undefined,
+    achievement_evaluation_timezone=undefined,
+):
     achievement = Achievement()
 
     if achievement_name is undefined:
@@ -312,16 +330,15 @@ def create_achievement(
 
 
 def create_goals(
-        achievement = undefined,
-        goal_condition = undefined,
-        goal_goal = undefined,
-        goal_operator = undefined,
-        goal_group_by_key = undefined,
-        goal_name = undefined
-    ):
+    achievement=undefined,
+    goal_condition=undefined,
+    goal_goal=undefined,
+    goal_operator=undefined,
+    goal_group_by_key=undefined,
+    goal_name=undefined,
+):
     goal = Goal()
     if achievement["name"] is "invite_users_achievement":
-
         if goal_condition is undefined:
             goal.condition = """{"term": {"type": "literal", "variable": "invite_users"}}"""
         else:
@@ -352,9 +369,10 @@ def create_goals(
         DBSession.flush()
 
     if achievement["name"] is "participate_achievement":
-
         if goal_condition is undefined:
-            goal.condition = """{"term": {"key": ["5","7"], "type": "literal", "key_operator": "IN", "variable": "participate"}}"""
+            goal.condition = (
+                """{"term": {"key": ["5","7"], "type": "literal", "key_operator": "IN", "variable": "participate"}}"""
+            )
         else:
             goal.condition = goal_condition
 
@@ -386,7 +404,6 @@ def create_goals(
 
 
 def create_goal_properties(goal_id):
-
     goal_property = GoalProperty()
     goal_property.name = "participate"
     goal_property.is_variable = True
@@ -407,7 +424,9 @@ def create_goal_properties(goal_id):
     DBSession.add(goals_goal_property)
     DBSession.flush()
 
-    goals_goal_property_result = DBSession.execute(t_goals_goalproperties.select().where(t_goals_goalproperties.c.goal_id == goal_id)).fetchone()
+    goals_goal_property_result = DBSession.execute(
+        t_goals_goalproperties.select().where(t_goals_goalproperties.c.goal_id == goal_id)
+    ).fetchone()
 
     return goals_goal_property_result
 
@@ -442,12 +461,12 @@ def create_achievement_user(user, achievement, achievement_date, level):
 
 
 def create_goal_evaluation_cache(
-        goal_id ,
-        gec_achievement_date,
-        gec_user_id,
-        gec_achieved = undefined,
-        gec_value = undefined,
-    ):
+    goal_id,
+    gec_achievement_date,
+    gec_user_id,
+    gec_achieved=undefined,
+    gec_value=undefined,
+):
     goal_evaluation_cache = GoalEvaluationCache()
 
     if gec_achieved is undefined:
@@ -472,9 +491,9 @@ def create_goal_evaluation_cache(
 
 
 def create_variable(
-        variable_name = undefined,
-        variable_group = undefined,
-    ):
+    variable_name=undefined,
+    variable_group=undefined,
+):
     variable = Variable()
     variable.name = variable_name
     variable.group = variable_group
@@ -485,12 +504,11 @@ def create_variable(
 
 
 def create_value(
-        user_id=undefined,
-        variable_id=undefined,
-        var_value=undefined,
-        key="",
-    ):
-
+    user_id=undefined,
+    variable_id=undefined,
+    var_value=undefined,
+    key="",
+):
     value = Value()
     value.user_id = user_id
     value.variable_id = variable_id

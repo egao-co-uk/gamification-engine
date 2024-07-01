@@ -1,13 +1,25 @@
 # -*- coding: utf-8 -*-
-from gengine.app.model import Value, Subject, t_subjects, Achievement, AchievementDate, SubjectType
+from gengine.app.model import (
+    Value,
+    Subject,
+    t_subjects,
+    Achievement,
+    AchievementDate,
+    SubjectType,
+)
 from gengine.app.tests.base import BaseDBTest
-from gengine.app.tests.helpers import create_subjecttypes, create_subjects, create_achievements, create_variables, \
-    default_dt, last_month
+from gengine.app.tests.helpers import (
+    create_subjecttypes,
+    create_subjects,
+    create_achievements,
+    create_variables,
+    default_dt,
+    last_month,
+)
 from gengine.metadata import DBSession
 
 
 class TestAchievement(BaseDBTest):
-
     def test_ancestors_descendants(self):
         create_subjecttypes()
         create_subjects()
@@ -33,7 +45,7 @@ class TestAchievement(BaseDBTest):
             of_type_id=None,
             from_date=default_dt(),
             to_date=default_dt(),
-            whole_time_required=False
+            whole_time_required=False,
         )
 
         self.assertIn(bielefeld.id, klaus_ancestors.keys())
@@ -47,12 +59,11 @@ class TestAchievement(BaseDBTest):
             of_type_id=team_type.id,
             from_date=default_dt(),
             to_date=default_dt(),
-            whole_time_required=False
+            whole_time_required=False,
         )
 
         self.assertIn(dev_team_bielefeld.id, germany_descendants.keys())
         self.assertNotIn(klaus.id, germany_descendants.keys())
-
 
     def test_simple_invite_users(self):
         create_subjecttypes()
@@ -70,7 +81,7 @@ class TestAchievement(BaseDBTest):
             subject_id=klaus.id,
             value=1,
             key=None,
-            at_datetime=default_dt()
+            at_datetime=default_dt(),
         )
 
         evaluation = Achievement.evaluate(
@@ -80,10 +91,10 @@ class TestAchievement(BaseDBTest):
                 evaluation_timezone=invite_users_achievement.evaluation_timezone,
                 evaluation_type=invite_users_achievement.evaluation,
                 evaluation_shift=invite_users_achievement.evaluation_shift,
-                context_datetime=default_dt()
+                context_datetime=default_dt(),
             ),
             context_subject_id=None,
-            execute_triggers=False
+            execute_triggers=False,
         )
 
         self.assertEqual(evaluation["level"], 0)
@@ -96,7 +107,7 @@ class TestAchievement(BaseDBTest):
             subject_id=klaus.id,
             value=3,
             key=None,
-            at_datetime=default_dt()
+            at_datetime=default_dt(),
         )
 
         evaluation = Achievement.evaluate(
@@ -106,10 +117,10 @@ class TestAchievement(BaseDBTest):
                 evaluation_timezone=invite_users_achievement.evaluation_timezone,
                 evaluation_type=invite_users_achievement.evaluation,
                 evaluation_shift=invite_users_achievement.evaluation_shift,
-                context_datetime=default_dt()
+                context_datetime=default_dt(),
             ),
             context_subject_id=None,
-            execute_triggers=False
+            execute_triggers=False,
         )
 
         self.assertEqual(evaluation["level"], 1)
@@ -122,7 +133,7 @@ class TestAchievement(BaseDBTest):
             subject_id=klaus.id,
             value=300,
             key=None,
-            at_datetime=default_dt()
+            at_datetime=default_dt(),
         )
 
         evaluation = Achievement.evaluate(
@@ -132,17 +143,16 @@ class TestAchievement(BaseDBTest):
                 evaluation_timezone=invite_users_achievement.evaluation_timezone,
                 evaluation_type=invite_users_achievement.evaluation,
                 evaluation_shift=invite_users_achievement.evaluation_shift,
-                context_datetime=default_dt()
+                context_datetime=default_dt(),
             ),
             context_subject_id=None,
-            execute_triggers=False
+            execute_triggers=False,
         )
 
         self.assertEqual(evaluation["level"], 100)
         self.assertEqual(evaluation["progress"], 304.0)
 
     def test_cycling_leaderboard(self):
-
         create_subjecttypes()
         create_subjects()
         create_variables()
@@ -165,7 +175,7 @@ class TestAchievement(BaseDBTest):
                 subject_id=user.id,
                 value=km,
                 key=None,
-                at_datetime=dt
+                at_datetime=dt,
             )
 
         def ev(user, dt, context_subject):
@@ -176,10 +186,10 @@ class TestAchievement(BaseDBTest):
                     evaluation_timezone=cyclist_of_the_month_achievement.evaluation_timezone,
                     evaluation_type=cyclist_of_the_month_achievement.evaluation,
                     evaluation_shift=cyclist_of_the_month_achievement.evaluation_shift,
-                    context_datetime=dt
+                    context_datetime=dt,
                 ),
                 execute_triggers=False,
-                context_subject_id=context_subject.id
+                context_subject_id=context_subject.id,
             )
 
         cycle(klaus, 5, default_dt())
@@ -201,7 +211,11 @@ class TestAchievement(BaseDBTest):
         self.assertEqual(lb_france["leaderboard_position"], None)
 
         # clara also cycled last month
-        Subject.join_subject(subject_id=clara.id, part_of_id=germany.id, join_date=last_month(default_dt()))
+        Subject.join_subject(
+            subject_id=clara.id,
+            part_of_id=germany.id,
+            join_date=last_month(default_dt()),
+        )
         cycle(clara, 10, last_month(default_dt()))
 
         # should not effect this month
@@ -211,4 +225,3 @@ class TestAchievement(BaseDBTest):
         # but should effect last month
         lb_germany = ev(clara, last_month(default_dt()), germany)
         self.assertEqual(lb_germany["leaderboard_position"], 0)
-

@@ -3,13 +3,27 @@ import datetime
 
 from dateutil.relativedelta import relativedelta
 
-from gengine.app.model import Subject, Language, Achievement, Variable, Value, TranslationVariable, \
-    t_subjects, Reward, AchievementReward, SubjectType, t_subjecttypes, SubjectDevice, t_subject_device, \
-    AchievementProperty
+from gengine.app.model import (
+    Subject,
+    Language,
+    Achievement,
+    Variable,
+    Value,
+    TranslationVariable,
+    t_subjects,
+    Reward,
+    AchievementReward,
+    SubjectType,
+    t_subjecttypes,
+    SubjectDevice,
+    t_subject_device,
+    AchievementProperty,
+)
 from gengine.metadata import DBSession
 from sqlalchemy import and_, select
 
 import logging
+
 log = logging.getLogger(__name__)
 
 try:
@@ -18,48 +32,42 @@ except ImportError as e:
     log.info("names not installed")
 
 default_gen_data = {
-    "timezone" : "Europe/Berlin",
-    "area" : {
-        "min_lat" : 51.65,
-        "max_lat" : 51.75,
-        "min_lng" : 8.70,
-        "max_lng" : 8.79
-    },
-    #"country" : "DE",
-    #"region" : "NRW",
-    #"city" : "Paderborn",
-    "language" : "de",
-    "additional_public_data" : {
-        "first_name" : "Matthew",
-        "last_name" : "Hayden"
-    }
+    "timezone": "Europe/Berlin",
+    "area": {"min_lat": 51.65, "max_lat": 51.75, "min_lng": 8.70, "max_lng": 8.79},
+    # "country" : "DE",
+    # "region" : "NRW",
+    # "city" : "Paderborn",
+    "language": "de",
+    "additional_public_data": {"first_name": "Matthew", "last_name": "Hayden"},
 }
 
 alt_gen_data = {
-    "timezone" : "US/Eastern",
-    "area" : {
-        "min_lat" : 40.680,
-        "max_lat" : 40.780,
-        "min_lng" : -73.89,
-        "max_lng" : -73.97
-    }
+    "timezone": "US/Eastern",
+    "area": {
+        "min_lat": 40.680,
+        "max_lat": 40.780,
+        "min_lng": -73.89,
+        "max_lng": -73.97,
+    },
 }
 
 default_device_data = {
-    "device_os" : "iOS 5",
-    "app_version" : "1.1",
-    "push_id" : "5678",
-    "device_id" : "1234"
+    "device_os": "iOS 5",
+    "app_version": "1.1",
+    "push_id": "5678",
+    "device_id": "1234",
 }
 
 
-class Undefined():
+class Undefined:
     pass
+
 
 undefined = Undefined()
 
-def randrange_float(f1,f2):
-    return random.random() * abs(f1 - f2) + min(f1,f2)
+
+def randrange_float(f1, f2):
+    return random.random() * abs(f1 - f2) + min(f1, f2)
 
 
 def create_subjecttypes():
@@ -84,8 +92,10 @@ def create_subjecttypes():
     DBSession.add(subjecttype_team)
     DBSession.flush()
 
+
 def get_user_subjecttype():
     return DBSession.query(SubjectType).filter_by(name="User").first()
+
 
 def create_subjects():
     germany = create_subject(name="Germany", type="Country")
@@ -121,12 +131,20 @@ def create_subjects():
     dev_team_bielefeld = create_subject(name="Developer Team Bielefeld", type="Team")
     DBSession.add(dev_team_bielefeld)
     DBSession.flush()
-    Subject.join_subject(subject_id=dev_team_bielefeld.id, part_of_id=bielefeld.id, join_date=default_dt())
+    Subject.join_subject(
+        subject_id=dev_team_bielefeld.id,
+        part_of_id=bielefeld.id,
+        join_date=default_dt(),
+    )
 
     dev_team_paderborn = create_subject(name="Developer Team Paderborn", type="Team")
     DBSession.add(dev_team_paderborn)
     DBSession.flush()
-    Subject.join_subject(subject_id=dev_team_paderborn.id, part_of_id=paderborn.id, join_date=default_dt())
+    Subject.join_subject(
+        subject_id=dev_team_paderborn.id,
+        part_of_id=paderborn.id,
+        join_date=default_dt(),
+    )
 
     dev_team_lyon = create_subject(name="Developer Team Lyon", type="Team")
     DBSession.add(dev_team_lyon)
@@ -189,7 +207,7 @@ def create_subjects():
     Subject.join_subject(subject_id=sonja.id, part_of_id=dev_team_bielefeld.id, join_date=default_dt())
     Subject.join_subject(subject_id=sonja.id, part_of_id=germany.id, join_date=default_dt())
 
-    #Paderborn
+    # Paderborn
 
     liam = create_subject(name="Liam", type="User")
     DBSession.add(liam)
@@ -228,7 +246,11 @@ def create_subjects():
     DBSession.flush()
     Subject.join_subject(subject_id=charlotte.id, part_of_id=paderborn.id, join_date=default_dt())
     Subject.join_subject(subject_id=charlotte.id, part_of_id=senior_developer.id, join_date=default_dt())
-    Subject.join_subject(subject_id=charlotte.id, part_of_id=dev_team_paderborn.id, join_date=default_dt())
+    Subject.join_subject(
+        subject_id=charlotte.id,
+        part_of_id=dev_team_paderborn.id,
+        join_date=default_dt(),
+    )
     Subject.join_subject(subject_id=charlotte.id, part_of_id=germany.id, join_date=default_dt())
 
     ida = create_subject(name="Ida", type="User")
@@ -247,7 +269,7 @@ def create_subjects():
     Subject.join_subject(subject_id=carolin.id, part_of_id=dev_team_paderborn.id, join_date=default_dt())
     Subject.join_subject(subject_id=carolin.id, part_of_id=germany.id, join_date=default_dt())
 
-    #Lyon
+    # Lyon
 
     lola = create_subject(name="Lola", type="User")
     DBSession.add(lola)
@@ -275,19 +297,14 @@ def create_subjects():
 
 
 def create_variables():
-    invite_users = Variable(
-        name="invite_users",
-        increase_permission="own"
-    )
+    invite_users = Variable(name="invite_users", increase_permission="own")
     DBSession.add(invite_users)
 
-    cycling = Variable(
-        name="cycling",
-        increase_permission="own"
-    )
+    cycling = Variable(name="cycling", increase_permission="own")
     DBSession.add(cycling)
 
     DBSession.flush()
+
 
 def create_achievements():
     user_type = DBSession.query(SubjectType).filter_by(name="User").first()
@@ -304,7 +321,7 @@ def create_achievements():
         view_permission="own",
         condition="""{"term": {"type": "literal", "variable": "invite_users"}}""",
         goal="3*level",
-        operator="geq"
+        operator="geq",
     )
     DBSession.add(invite_users)
     DBSession.flush()
@@ -318,29 +335,25 @@ def create_achievements():
         view_permission="everyone",
         condition="""{"term": {"type": "literal", "variable": "cycling"}}""",
         context_subjecttype_id=country_type.id,
-        operator="geq"
+        operator="geq",
     )
-    cyclist_of_the_month.compared_subjecttypes.append(
-        user_type,
-        team_type
-    )
+    cyclist_of_the_month.compared_subjecttypes.append(user_type, team_type)
     DBSession.add(cyclist_of_the_month)
     DBSession.flush()
 
-    #goal.condition = """"""
-    #goal.condition = """{"term": {"key": ["5","7"], "type": "literal", "key_operator": "IN", "variable": "participate"}}"""
+    # goal.condition = """"""
+    # goal.condition = """{"term": {"key": ["5","7"], "type": "literal", "key_operator": "IN", "variable": "participate"}}"""
 
 
 def create_subject(
-        name,
-        type,
-        lat=None,
-        lng=None,
-        timezone=None,
-        language=None,
-        additional_public_data={},
-    ):
-
+    name,
+    type,
+    lat=None,
+    lng=None,
+    timezone=None,
+    language=None,
+    additional_public_data={},
+):
     type_obj = DBSession.query(SubjectType).filter_by(name=type).first()
     language_obj = get_or_create_language(name=language) if language else None
 
@@ -355,6 +368,7 @@ def create_subject(
     DBSession.add(subject)
     return subject
 
+
 def get_or_create_language(name):
     lang = DBSession.query(Language).filter_by(name=name).first()
     if not lang:
@@ -364,15 +378,15 @@ def get_or_create_language(name):
         DBSession.flush()
     return lang
 
-def create_device(
-        subject_id=undefined,
-        device_id=undefined,
-        device_os=undefined,
-        push_id=undefined,
-        app_version=undefined,
-        gen_data=default_device_data
-    ):
 
+def create_device(
+    subject_id=undefined,
+    device_id=undefined,
+    device_os=undefined,
+    push_id=undefined,
+    app_version=undefined,
+    gen_data=default_device_data,
+):
     if push_id is undefined:
         push_id = gen_data["push_id"]
 
@@ -386,19 +400,24 @@ def create_device(
         device_id = gen_data["device_id"]
 
     SubjectDevice.add_or_update_device(
-        device_id = device_id,
-        subject_id = subject_id,
-        device_os = device_os,
-        push_id = push_id,
-        app_version = app_version
+        device_id=device_id,
+        subject_id=subject_id,
+        device_os=device_os,
+        push_id=push_id,
+        app_version=app_version,
     )
 
-    device = DBSession.execute(t_subject_device.select().where(and_(
-        t_subject_device.c.device_id == device_id,
-        t_subject_device.c.subject_id == subject_id
-    ))).fetchone()
+    device = DBSession.execute(
+        t_subject_device.select().where(
+            and_(
+                t_subject_device.c.device_id == device_id,
+                t_subject_device.c.subject_id == subject_id,
+            )
+        )
+    ).fetchone()
 
     return device
+
 
 def create_achievement_rewards(achievement):
     reward = Reward()
@@ -416,6 +435,7 @@ def create_achievement_rewards(achievement):
 
     return achievement_reward
 
+
 def create_variable(name, increase_permission="admin"):
     variable = Variable()
     variable.name = name
@@ -424,32 +444,29 @@ def create_variable(name, increase_permission="admin"):
     DBSession.flush()
     return variable
 
+
 def default_dt():
     # Montag
 
     import datetime
     import pytz
 
-    dt = datetime.datetime(
-        year=2017,
-        month=5,
-        day=1,
-        hour=10,
-        minute=0,
-        second=0,
-        tzinfo=pytz.UTC
-    )
+    dt = datetime.datetime(year=2017, month=5, day=1, hour=10, minute=0, second=0, tzinfo=pytz.UTC)
 
     return dt
+
 
 def next_day(dt):
     return dt + relativedelta(days=1)
 
+
 def next_month(dt):
     return dt + relativedelta(months=1)
 
+
 def next_week(dt):
     return dt + relativedelta(weeks=1)
+
 
 def last_month(dt):
     return dt - relativedelta(months=1)

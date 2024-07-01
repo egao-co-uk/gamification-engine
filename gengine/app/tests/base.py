@@ -7,8 +7,8 @@ from sqlalchemy.orm.scoping import scoped_session
 from gengine.metadata import init_session, get_sessionmaker
 from gengine.app.tests import db as testDB
 
-class BaseDBTest(unittest.TestCase):
 
+class BaseDBTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         if cls is BaseDBTest:
@@ -17,6 +17,7 @@ class BaseDBTest(unittest.TestCase):
 
     def setUp(self):
         from gengine.app.cache import clear_all_caches
+
         clear_all_caches()
 
         if os.path.exists("/tmp/test_pgdata"):
@@ -24,16 +25,21 @@ class BaseDBTest(unittest.TestCase):
 
         self.db = testDB.db()
         dsn = self.db.dsn()
-        self.engine =  create_engine(
-            "postgresql://%(user)s@%(host)s:%(port)s/%(database)s" % {
+        self.engine = create_engine(
+            "postgresql://%(user)s@%(host)s:%(port)s/%(database)s"
+            % {
                 "user": dsn["user"],
                 "host": dsn["host"],
                 "port": dsn["port"],
                 "database": dsn["database"],
             }
         )
-        init_session(override_session=scoped_session(get_sessionmaker(bind=self.engine)), replace=True)
+        init_session(
+            override_session=scoped_session(get_sessionmaker(bind=self.engine)),
+            replace=True,
+        )
         from gengine.metadata import Base
+
         Base.metadata.bind = self.engine
 
         Base.metadata.drop_all(self.engine)
@@ -43,13 +49,10 @@ class BaseDBTest(unittest.TestCase):
         from alembic.config import Config
         from alembic import command
 
-        alembic_cfg = Config(attributes={
-            'engine': self.engine,
-            'schema': 'public'
-        })
+        alembic_cfg = Config(attributes={"engine": self.engine, "schema": "public"})
         script_location = os.path.join(
             os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-            'app/alembic'
+            "app/alembic",
         )
         alembic_cfg.set_main_option("script_location", script_location)
 
@@ -63,4 +66,3 @@ class BaseDBTest(unittest.TestCase):
     def tearDown(self):
         self.db.stop()
         shutil.rmtree("/tmp/test_pgdata")
-

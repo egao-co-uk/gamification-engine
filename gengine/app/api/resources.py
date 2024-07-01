@@ -30,7 +30,7 @@ class RootResource(dict):
     def __init__(self, *args, **kw):
         request = kw.pop("request")
         super(RootResource, self).__init__(*args, **kw)
-        self['api'] = ApiResource(t_name='api', t_parent=self, request=request)
+        self["api"] = ApiResource(t_name="api", t_parent=self, request=request)
 
 
 # LocationAware BaseResource
@@ -52,10 +52,10 @@ class BaseResource(object):
 class ApiResource(BaseResource):
     def __init__(self, *args, **kw):
         super(ApiResource, self).__init__(*args, **kw)
-        self['subjects'] = SubjectCollectionResource(request=self.request, t_name='subjects', t_parent=self)
-        self['subjecttypes'] = SubjectTypeCollectionResource(request=self.request, t_name='subjecttypes', t_parent=self)
-        self['variables'] = VariableCollectionResource(request=self.request, t_name='variables', t_parent=self)
-        self['achievements'] = AchievementCollectionResource(request=self.request, t_name='achievements', t_parent=self)
+        self["subjects"] = SubjectCollectionResource(request=self.request, t_name="subjects", t_parent=self)
+        self["subjecttypes"] = SubjectTypeCollectionResource(request=self.request, t_name="subjecttypes", t_parent=self)
+        self["variables"] = VariableCollectionResource(request=self.request, t_name="variables", t_parent=self)
+        self["achievements"] = AchievementCollectionResource(request=self.request, t_name="achievements", t_parent=self)
 
 
 class AchievementCollectionResource(BaseResource):
@@ -65,9 +65,18 @@ class AchievementCollectionResource(BaseResource):
     def __getitem__(self, achievement_id):
         try:
             from gengine.metadata import DBSession
-            row = DBSession.execute(t_achievements.select().where(t_achievements.c.id == int(achievement_id))).fetchone()
+
+            row = DBSession.execute(
+                t_achievements.select().where(t_achievements.c.id == int(achievement_id))
+            ).fetchone()
             if row:
-                return AchievementResource(request=self.request, t_name=achievement_id, t_parent=self, achievement_id=achievement_id, achievement_row=row)
+                return AchievementResource(
+                    request=self.request,
+                    t_name=achievement_id,
+                    t_parent=self,
+                    achievement_id=achievement_id,
+                    achievement_row=row,
+                )
         except ValueError:
             pass
         except:
@@ -89,9 +98,16 @@ class SubjectCollectionResource(BaseResource):
     def __getitem__(self, subject_id):
         try:
             from gengine.metadata import DBSession
+
             row = DBSession.execute(t_subjects.select().where(t_subjects.c.id == int(subject_id))).fetchone()
             if row:
-                return SubjectResource(request=self.request, t_name=subject_id, t_parent=self, subject_id=subject_id, subject_row=row)
+                return SubjectResource(
+                    request=self.request,
+                    t_name=subject_id,
+                    t_parent=self,
+                    subject_id=subject_id,
+                    subject_row=row,
+                )
         except ValueError:
             pass
         except:
@@ -105,6 +121,7 @@ class SubjectResource(BaseResource):
         self.subject_id = subject_id
         self.subject_row = subject_row
 
+
 class SubjectTypeCollectionResource(BaseResource):
     def __init__(self, *args, **kw):
         super(SubjectTypeCollectionResource, self).__init__(*args, **kw)
@@ -112,9 +129,18 @@ class SubjectTypeCollectionResource(BaseResource):
     def __getitem__(self, subjecttype_id):
         try:
             from gengine.metadata import DBSession
-            row = DBSession.execute(t_subjecttypes.select().where(t_subjecttypes.c.id == int(subjecttype_id))).fetchone()
+
+            row = DBSession.execute(
+                t_subjecttypes.select().where(t_subjecttypes.c.id == int(subjecttype_id))
+            ).fetchone()
             if row:
-                return SubjectTypeResource(request=self.request, t_name=subjecttype_id, t_parent=self, subjecttype_id=subjecttype_id, subjecttype_row=row)
+                return SubjectTypeResource(
+                    request=self.request,
+                    t_name=subjecttype_id,
+                    t_parent=self,
+                    subjecttype_id=subjecttype_id,
+                    subjecttype_row=row,
+                )
         except ValueError:
             pass
         except:
@@ -136,9 +162,16 @@ class VariableCollectionResource(BaseResource):
     def __getitem__(self, variable_id):
         try:
             from gengine.metadata import DBSession
+
             row = DBSession.execute(t_variables.select().where(t_variables.c.id == int(variable_id))).fetchone()
             if row:
-                return VariableResource(request=self.request, t_name=variable_id, t_parent=self, variable_id=variable_id, variable_row=row)
+                return VariableResource(
+                    request=self.request,
+                    t_name=variable_id,
+                    t_parent=self,
+                    variable_id=variable_id,
+                    variable_row=row,
+                )
         except ValueError:
             pass
         except:

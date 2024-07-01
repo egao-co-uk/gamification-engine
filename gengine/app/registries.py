@@ -1,13 +1,14 @@
 registries = {}
 
+
 class HookPointRegistry:
-    def __init__(self,  single_execution=False):
+    def __init__(self, single_execution=False):
         self.registrations = {}
         self.single_execution = single_execution
         self.has_been_executed = set()
 
     def register(self, id, fun):
-        self.registrations[id]=fun
+        self.registrations[id] = fun
 
     def run_extensions(self, **kw):
         for id in self.registrations.keys():
@@ -28,6 +29,7 @@ def get_task_registry():
     global registries
     if "tasks" not in registries:
         from gengine.app.tasksystem import TaskRegistry
+
         registries["tasks"] = TaskRegistry()
     return registries["tasks"]
 

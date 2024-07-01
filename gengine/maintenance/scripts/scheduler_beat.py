@@ -25,8 +25,7 @@ log.addHandler(logging.StreamHandler())
 
 def usage(argv):
     cmd = os.path.basename(argv[0])
-    print('usage: %s <config_uri> [var=value]\n'
-          '(example: "%s production.ini")' % (cmd, cmd))
+    print("usage: %s <config_uri> [var=value]\n" '(example: "%s production.ini")' % (cmd, cmd))
     sys.exit(1)
 
 
@@ -39,17 +38,18 @@ def main(argv=sys.argv):
     settings = get_appsettings(config_uri, options=options)
 
     import gengine
+
     gengine.main({}, **settings)
 
-    from gengine.metadata import (
-        DBSession
-    )
+    from gengine.metadata import DBSession
+
     sess = DBSession()
 
     import gengine.app.model as m
     import crontab
 
     from gengine.app.registries import get_task_registry
+
     enginetasks = get_task_registry().registrations
 
     with transaction.manager:
@@ -63,7 +63,6 @@ def main(argv=sys.argv):
                 cron = enginetasks.get(task["task_name"]).get("default_cron", None)
 
             if cron:
-
                 now = dt_now().replace(second=0)
 
                 item = crontab.CronItem(line=cron)
@@ -71,16 +70,21 @@ def main(argv=sys.argv):
                 prev = s.get_next().replace(second=0)
                 next = s.get_next().replace(second=0)
 
-                execs = sess.execute(m.t_taskexecutions.select().where(and_(
-                    m.t_taskexecutions.c.task_id == task["id"],
-                    m.t_taskexecutions.c.canceled_at == None,
-                    m.t_taskexecutions.c.finished_at == None,
-                )).order_by(m.t_taskexecutions.c.planned_at.desc())).fetchall()
+                execs = sess.execute(
+                    m.t_taskexecutions.select()
+                    .where(
+                        and_(
+                            m.t_taskexecutions.c.task_id == task["id"],
+                            m.t_taskexecutions.c.canceled_at == None,
+                            m.t_taskexecutions.c.finished_at == None,
+                        )
+                    )
+                    .order_by(m.t_taskexecutions.c.planned_at.desc())
+                ).fetchall()
 
                 found = False
 
                 for exec in execs:
-
                     if exec["planned_at"] >= next:
                         # The next execution is already planned
                         found = True
@@ -90,31 +94,18 @@ def main(argv=sys.argv):
                         if next - datetime.timedelta(minutes=10) < dt_now():
                             # The next execution is planned in less than 10 minutes, cancel the other one
                             sess.execute(
-                                m.t_taskexecutions.update().values({
-                                    'canceled_at': dt_now()
-                                }).where({
-                                    'id': exec["id"]
-                                })
+                                m.t_taskexecutions.update().values({"canceled_at": dt_now()}).where({"id": exec["id"]})
                             )
 
                     if exec["locked_at"] and exec["locked_at"] < dt_ago(hours=24):
                         # this task is running for more than 24 hours. probably crashed.... set it to canceled
                         sess.execute(
-                            m.t_taskexecutions.update().values({
-                                'canceled_at': dt_now()
-                            }).where({
-                                'id': exec["id"]
-                            })
+                            m.t_taskexecutions.update().values({"canceled_at": dt_now()}).where({"id": exec["id"]})
                         )
 
                 if not found:
                     # Plan next execution
-                    sess.execute(
-                        m.t_taskexecutions.insert().values({
-                            'task_id': task["id"],
-                            'planned_at': next
-                        })
-                    )
+                    sess.execute(m.t_taskexecutions.insert().values({"task_id": task["id"], "planned_at": next}))
 
         sess.flush()
         sess.commit()

@@ -21,6 +21,7 @@ classifiers=[
     "Programming Language :: Python :: 3.11",
     "License :: OSI Approved :: MIT License"
 ]
+requires-python = ">=3.11"
 
 [project.urls]
 Homepage = "https://www.gamification-software.com"
@@ -89,3 +90,7 @@ style = "semver"
 [build-system]
 requires = ["poetry-core", "poetry-dynamic-versioning"]
 build-backend = "poetry_dynamic_versioning.backend"
+
+[tool.ruff]
+builtins = ["_"]
+line-length = 120

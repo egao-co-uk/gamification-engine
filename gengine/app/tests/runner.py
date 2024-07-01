@@ -18,25 +18,29 @@ init_declarative_base()
 
 __path__ = [x[0] for x in os.walk(os.path.dirname(__file__))]
 
+
 def create_test_suite():
     suite = unittest.TestSuite()
     for imp, modname, _ in pkgutil.walk_packages(__path__):
-        #if modname in ('test_achievement_integration_tests',):
-            mod = imp.find_module(modname).load_module(modname)
-            for test in unittest.defaultTestLoader.loadTestsFromModule(mod):
-                suite.addTests(test)
+        # if modname in ('test_achievement_integration_tests',):
+        mod = imp.find_module(modname).load_module(modname)
+        for test in unittest.defaultTestLoader.loadTestsFromModule(mod):
+            suite.addTests(test)
     return suite
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     exit = 1
     try:
         redis = testing.redis.RedisServer()
 
         from gengine.base.cache import setup_redis_cache
+
         dsn = redis.dsn()
         setup_redis_cache(dsn["host"], dsn["port"], dsn["db"])
 
         from gengine.app.cache import init_caches
+
         init_caches()
 
         db.setupDB()

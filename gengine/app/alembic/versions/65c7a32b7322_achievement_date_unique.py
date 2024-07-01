@@ -7,8 +7,8 @@ Create Date: 2017-01-31 23:01:11.744725
 """
 
 # revision identifiers, used by Alembic.
-revision = '65c7a32b7322'
-down_revision = 'd4a70083f72e'
+revision = "65c7a32b7322"
+down_revision = "d4a70083f72e"
 branch_labels = None
 depends_on = None
 
@@ -26,15 +26,59 @@ def upgrade():
     op.execute("ALTER TABLE goal_evaluation_cache ADD COLUMN id SERIAL;")
     op.execute("ALTER TABLE goal_evaluation_cache ADD CONSTRAINT pk_goal_evaluation_cache PRIMARY KEY(id);")
 
-    op.create_index('idx_achievements_users_date_not_null_unique', 'achievements_users', ['user_id', 'achievement_id', 'achievement_date', 'level'], unique=True, postgresql_where=sa.text('achievement_date IS NOT NULL'))
-    op.create_index('idx_achievements_users_date_null_unique', 'achievements_users', ['user_id', 'achievement_id', 'level'], unique=True, postgresql_where=sa.text('achievement_date IS NULL'))
-    op.create_index(op.f('ix_achievements_users_achievement_id'), 'achievements_users', ['achievement_id'], unique=False)
-    op.create_index(op.f('ix_achievements_users_level'), 'achievements_users', ['level'], unique=False)
+    op.create_index(
+        "idx_achievements_users_date_not_null_unique",
+        "achievements_users",
+        ["user_id", "achievement_id", "achievement_date", "level"],
+        unique=True,
+        postgresql_where=sa.text("achievement_date IS NOT NULL"),
+    )
+    op.create_index(
+        "idx_achievements_users_date_null_unique",
+        "achievements_users",
+        ["user_id", "achievement_id", "level"],
+        unique=True,
+        postgresql_where=sa.text("achievement_date IS NULL"),
+    )
+    op.create_index(
+        op.f("ix_achievements_users_achievement_id"),
+        "achievements_users",
+        ["achievement_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_achievements_users_level"),
+        "achievements_users",
+        ["level"],
+        unique=False,
+    )
 
-    op.create_index('idx_goal_evaluation_cache_date_not_null_unique', 'goal_evaluation_cache', ['user_id', 'goal_id', 'achievement_date'], unique=True, postgresql_where=sa.text('achievement_date IS NOT NULL'))
-    op.create_index('idx_goal_evaluation_cache_date_null_unique', 'goal_evaluation_cache', ['user_id', 'goal_id'], unique=True, postgresql_where=sa.text('achievement_date IS NULL'))
-    op.create_index(op.f('ix_goal_evaluation_cache_goal_id'), 'goal_evaluation_cache', ['goal_id'], unique=False)
-    op.create_index(op.f('ix_goal_evaluation_cache_user_id'), 'goal_evaluation_cache', ['user_id'], unique=False)
+    op.create_index(
+        "idx_goal_evaluation_cache_date_not_null_unique",
+        "goal_evaluation_cache",
+        ["user_id", "goal_id", "achievement_date"],
+        unique=True,
+        postgresql_where=sa.text("achievement_date IS NOT NULL"),
+    )
+    op.create_index(
+        "idx_goal_evaluation_cache_date_null_unique",
+        "goal_evaluation_cache",
+        ["user_id", "goal_id"],
+        unique=True,
+        postgresql_where=sa.text("achievement_date IS NULL"),
+    )
+    op.create_index(
+        op.f("ix_goal_evaluation_cache_goal_id"),
+        "goal_evaluation_cache",
+        ["goal_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_goal_evaluation_cache_user_id"),
+        "goal_evaluation_cache",
+        ["user_id"],
+        unique=False,
+    )
     ### end Alembic commands ###
 
 

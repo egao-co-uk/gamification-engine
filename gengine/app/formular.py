@@ -11,25 +11,27 @@ import operator
 
 from sqlalchemy.sql import and_, or_
 
+
 class FormularEvaluationException(Exception):
     def __init__(self, message):
         self.message = message
 
+
 # The Expression Parser for mathematical formulars
 class NumericStringParser(object):
-    '''
+    """
     Most of this code comes from the fourFn.py pyparsing example
 
     # from: http://stackoverflow.com/a/2371789
 
-    '''
+    """
 
     def pushFirst(self, strg, loc, toks):
         self.exprStack.append(toks[0])
 
     def pushUMinus(self, strg, loc, toks):
-        if toks and toks[0] == '-':
-            self.exprStack.append('unary -')
+        if toks and toks[0] == "-":
+            self.exprStack.append("unary -")
 
     def __init__(self, extra_literals=[]):
         """
@@ -44,9 +46,11 @@ class NumericStringParser(object):
         """
         point = pp.Literal(".")
         e = pp.CaselessLiteral("E")
-        fnumber = pp.Combine(pp.Word("+-" + pp.nums, pp.nums) +
-                             pp.Optional(point + pp.Optional(pp.Word(pp.nums))) +
-                             pp.Optional(e + pp.Word("+-" + pp.nums, pp.nums)))
+        fnumber = pp.Combine(
+            pp.Word("+-" + pp.nums, pp.nums)
+            + pp.Optional(point + pp.Optional(pp.Word(pp.nums)))
+            + pp.Optional(e + pp.Word("+-" + pp.nums, pp.nums))
+        )
         ident = pp.Word(pp.alphas, pp.alphas + pp.nums + "_$")
         plus = pp.Literal("+")
         minus = pp.Literal("-")
@@ -60,13 +64,18 @@ class NumericStringParser(object):
         pi = pp.CaselessLiteral("PI")
 
         self.extra_literals = extra_literals
-        pp_extra_literals = functools.reduce(operator.or_, [pp.CaselessLiteral(e) for e in extra_literals], pp.NoMatch())
+        pp_extra_literals = functools.reduce(
+            operator.or_, [pp.CaselessLiteral(e) for e in extra_literals], pp.NoMatch()
+        )
 
         expr = pp.Forward()
-        atom = ((pp.Optional(pp.oneOf("- +")) +
-                 (pi | e | pp_extra_literals | fnumber | ident + lpar + expr + rpar).setParseAction(self.pushFirst))
-                | pp.Optional(pp.oneOf("- +")) + pp.Group(lpar + expr + rpar)
-                ).setParseAction(self.pushUMinus)
+        atom = (
+            (
+                pp.Optional(pp.oneOf("- +"))
+                + (pi | e | pp_extra_literals | fnumber | ident + lpar + expr + rpar).setParseAction(self.pushFirst)
+            )
+            | pp.Optional(pp.oneOf("- +")) + pp.Group(lpar + expr + rpar)
+        ).setParseAction(self.pushUMinus)
         # by defining exponentiation as "atom [ ^ factor ]..." instead of
         # "atom [ ^ atom ]...", we get right-to-left exponents, instead of left-to-right
         # that is, 2^3^2 = 2^(3^2), not (2^3)^2.
@@ -80,24 +89,28 @@ class NumericStringParser(object):
         self.bnf = expr
         # map operator symbols to corresponding arithmetic operations
         epsilon = 1e-12
-        self.opn = {"+": operator.add,
-                    "-": operator.sub,
-                    "*": operator.mul,
-                    "/": operator.truediv,
-                    "^": operator.pow}
-        self.fn = {"sin": math.sin,
-                   "cos": math.cos,
-                   "tan": math.tan,
-                   "abs": abs,
-                   "trunc": lambda a: int(a),
-                   "round": round,
-                   "sgn": lambda a: abs(a) > epsilon and pp.cmp(a, 0) or 0,
-                   "log10": lambda a: a if a == 0 else math.log10(a),
-                   "floor": math.floor}
+        self.opn = {
+            "+": operator.add,
+            "-": operator.sub,
+            "*": operator.mul,
+            "/": operator.truediv,
+            "^": operator.pow,
+        }
+        self.fn = {
+            "sin": math.sin,
+            "cos": math.cos,
+            "tan": math.tan,
+            "abs": abs,
+            "trunc": lambda a: int(a),
+            "round": round,
+            "sgn": lambda a: abs(a) > epsilon and pp.cmp(a, 0) or 0,
+            "log10": lambda a: a if a == 0 else math.log10(a),
+            "floor": math.floor,
+        }
 
     def evaluateStack(self, s, key_value_map={}):
         op = s.pop()
-        if op == 'unary -':
+        if op == "unary -":
             return -self.evaluateStack(s, key_value_map)
         if op in "+-*/^":
             op2 = self.evaluateStack(s, key_value_map)
@@ -119,7 +132,7 @@ class NumericStringParser(object):
     def eval(self, num_string, key_value_map={}, parseAll=True):
         self.exprStack = []
         results = self.bnf.parseString(num_string, parseAll)
-        val = self.evaluateStack(self.exprStack[:], key_value_map = key_value_map)
+        val = self.evaluateStack(self.exprStack[:], key_value_map=key_value_map)
         return val
 
 
@@ -128,20 +141,22 @@ def evaluate_value_expression(expression, params={}):
         return None
     try:
         nsp = NumericStringParser(extra_literals=params.keys())
-        return nsp.eval(expression,key_value_map=params)
+        return nsp.eval(expression, key_value_map=params)
     except:
         raise FormularEvaluationException(expression)
 
 
 def render_string(tpl, params):
     """Substitute text in <> with corresponding variable value."""
-    regex = re.compile('\${(.+?)}')
+    regex = re.compile("\${(.+?)}")
+
     def repl(m):
         group = m.group(1)
         value = evaluate_value_expression(group, params)
         if int(value) == value:
             value = int(value)
         return str(value)
+
     return regex.sub(repl, tpl)
 
 
@@ -173,43 +188,58 @@ def evaluate_string(inst, params=None):
 
 # The condition JSON-Schema
 class Conjunction(jsl.Document):
-    terms = jsl.ArrayField(jsl.OneOfField([
-        jsl.DocumentField("Conjunction", as_ref=True),
-        jsl.DocumentField("Disjunction", as_ref=True),
-        jsl.DocumentField("Literal", as_ref=True)
-    ], required=True), required=True)
+    terms = jsl.ArrayField(
+        jsl.OneOfField(
+            [
+                jsl.DocumentField("Conjunction", as_ref=True),
+                jsl.DocumentField("Disjunction", as_ref=True),
+                jsl.DocumentField("Literal", as_ref=True),
+            ],
+            required=True,
+        ),
+        required=True,
+    )
     type = jsl.StringField(pattern="^conjunction$")
 
 
 class Disjunction(jsl.Document):
-    terms = jsl.ArrayField(jsl.OneOfField([
-        jsl.DocumentField("Conjunction", as_ref=True),
-        jsl.DocumentField("Disjunction", as_ref=True),
-        jsl.DocumentField("Literal", as_ref=True)
-    ], required=True), required=True)
+    terms = jsl.ArrayField(
+        jsl.OneOfField(
+            [
+                jsl.DocumentField("Conjunction", as_ref=True),
+                jsl.DocumentField("Disjunction", as_ref=True),
+                jsl.DocumentField("Literal", as_ref=True),
+            ],
+            required=True,
+        ),
+        required=True,
+    )
     type = jsl.StringField(pattern="^disjunction$")
 
 
 class Literal(jsl.Document):
     variable = jsl.StringField(required=True)
-    key_operator = jsl.StringField(pattern = "^(IN|ILIKE)$", required=False)
+    key_operator = jsl.StringField(pattern="^(IN|ILIKE)$", required=False)
     key = jsl.ArrayField(jsl.StringField(), required=False)
     type = jsl.StringField(pattern="^literal$")
 
 
 class TermDocument(jsl.Document):
-    term = jsl.OneOfField([
-        jsl.DocumentField(Conjunction, as_ref=True),
-        jsl.DocumentField(Disjunction, as_ref=True),
-        jsl.DocumentField(Literal, as_ref=True)
-    ], required=True)
+    term = jsl.OneOfField(
+        [
+            jsl.DocumentField(Conjunction, as_ref=True),
+            jsl.DocumentField(Disjunction, as_ref=True),
+            jsl.DocumentField(Literal, as_ref=True),
+        ],
+        required=True,
+    )
 
 
 def validate_term(condition_term):
     return jsonschema.validate(condition_term, TermDocument.get_schema())
 
-def _term_eval(term, column_variable, column_key):
 
+def _term_eval(term, column_variable, column_key):
     if term["type"].lower() == "conjunction":
         return and_(*((_term_eval(t, column_variable, column_key) for t in term["terms"])))
     elif term["type"].lower() == "disjunction":
@@ -219,18 +249,19 @@ def _term_eval(term, column_variable, column_key):
             key_operator = term.get("key_operator", "IN")
             if key_operator is None or key_operator == "IN":
                 key_condition = column_key.in_(term["key"])
-            elif key_operator=="ILIKE":
+            elif key_operator == "ILIKE":
                 key_condition = or_(*(column_key.ilike(pattern) for pattern in term["key"]))
-            return and_(column_variable==term["variable"], key_condition)
+            return and_(column_variable == term["variable"], key_condition)
         else:
-            return column_variable==term["variable"]
+            return column_variable == term["variable"]
 
 
 def evaluate_condition(inst, column_variable=None, column_key=None):
     try:
-        if isinstance(inst,str):
+        if isinstance(inst, str):
             inst = json.loads(inst)
         from gengine.app.model import t_values, t_variables
+
         if column_variable is None:
             column_variable = t_variables.c.name.label("variable_name")
         if column_key is None:
@@ -239,34 +270,40 @@ def evaluate_condition(inst, column_variable=None, column_key=None):
         jsonschema.validate(inst, TermDocument.get_schema())
         return _term_eval(inst["term"], column_variable, column_key)
     except:
-       raise FormularEvaluationException(json.dumps(inst))
+        raise FormularEvaluationException(json.dumps(inst))
 
 
 demo_schema = {
-    'term': {
-        'variable': 'participate',
-        'key_operator': 'IN',
-        'key': ['2', ],
-        'type': 'literal'
+    "term": {
+        "variable": "participate",
+        "key_operator": "IN",
+        "key": [
+            "2",
+        ],
+        "type": "literal",
     }
 }
 
 demo2_schema = {
-    'term': {
-        'type': 'disjunction',
-        'terms': [
+    "term": {
+        "type": "disjunction",
+        "terms": [
             {
-                'type': 'literal',
-                'variable': 'participate',
-                'key_operator': 'ILIKE',
-                'key': ['%blah%', ]
+                "type": "literal",
+                "variable": "participate",
+                "key_operator": "ILIKE",
+                "key": [
+                    "%blah%",
+                ],
             },
             {
-                'type': 'literal',
-                'variable': 'participate',
-                'key_operator': 'IN',
-                'key': ['2', ]
-            }
-        ]
+                "type": "literal",
+                "variable": "participate",
+                "key_operator": "IN",
+                "key": [
+                    "2",
+                ],
+            },
+        ],
     }
 }
