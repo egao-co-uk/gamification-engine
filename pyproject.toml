@@ -1,0 +1,91 @@
+[tool.poetry]
+name = "gamification-engine"
+version = "0.1.0"
+description="The Gamification-Engine (gengine) provides an API for integrating any kinds of gamification features."
+authors = [
+    "Marcel Sander <marcel@gamification-software.com>",
+    "Jens Janiuk",
+    "Matthias Feldotto",
+    "Nikolai Matiushev <egao1980@gmail.com>"
+]
+readme = "README.md"
+packages = [{include = "gengine"}]
+license = "MIT License"
+keywords = ["web", "wsgi", "bfg", "pylons", "pyramid", "gamification"]
+classifiers=[
+    "Programming Language :: Python",
+    "Framework :: Pyramid",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+    "Topic :: Software Development :: Libraries",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: MIT License"
+]
+
+[project.urls]
+Homepage = "https://www.gamification-software.com"
+Documentation = "https://github.com/egao-co-uk/gamification-engine/blob/master/README.md"
+Repository = "https://github.com/egao-co-uk/gamification-engine.git"
+Issues = "https://github.com/egao-co-uk/gamification-engine/issues"
+Changelog = "https://github.com/egao-co-uk/gamification-engine/blob/master/CHANGES.txt"
+
+[project.entry-points."paste.app_factory"]
+main = "gengine:main"
+
+[project.console-scripts]
+initialize_gengine_db = "gengine.maintenance.scripts.initializedb:main"
+generate_gengine_erd = "gengine.maintenance.scripts.generate_erd:main"
+generate_gengine_revision = "gengine.maintenance.scripts.generate_revision:main"
+gengine_push_messages = "gengine.maintenance.scripts.push_messages:main"
+gengine_scheduler_beat = "gengine.maintenance.scripts.scheduler_beat:main"
+gengine_scheduler_worker = "gengine.maintenance.scripts.scheduler_worker:main"
+
+[tool.redgalaxy.plugins]
+gengine = "gengine:redgalaxy"
+
+[tool.poetry.dev-dependencies]
+ruff = "^0.5.0"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pyramid = "*"
+pyramid_chameleon = "*"
+pyramid_debugtoolbar = "*"
+pyramid_tm = "*"
+SQLAlchemy = "*"
+transaction = "*"
+"zope.sqlalchemy" = "*"
+waitress = "*"
+pytz = "*"
+"dogpile.cache" = "*"
+pyramid_dogpile_cache = "*"
+Flask = "*"
+flask-admin = "*"
+psycopg2 = "*"
+pymemcache = "*"
+mock = "*"
+alembic = "*"
+raven = "*"
+jsl = "*"
+jsonschema = "*"
+pyparsing = "*"
+python-crontab = "*"
+croniter = "*"
+"zope.interface" = "*"
+argon2-cffi = "*"
+requests = "*"
+names = "*"
+
+[tool.poetry.extras]
+"auth" = ["argon2"]
+"pushes" = ["tapns3", "python-gcm"]
+
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "semver"
+
+[build-system]
+requires = ["poetry-core", "poetry-dynamic-versioning"]
+build-backend = "poetry_dynamic_versioning.backend"

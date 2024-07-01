@@ -2,27 +2,14 @@
 """models including business logic"""
 
 import datetime
-import logging
-from collections import defaultdict
-from datetime import timedelta
-
 import hashlib
+import logging
+import sys
+
 import pytz
 import sqlalchemy.types as ty
 from dateutil import relativedelta
-from sqlalchemy.dialects.postgresql import JSON
-import sys
-
 from pyramid.settings import asbool
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.sql.ddl import DDL
-from sqlalchemy.sql.schema import UniqueConstraint, Index
-from sqlalchemy.sql.sqltypes import Integer, String
-
-from gengine.app.permissions import perm_global_increase_value
-from gengine.base.model import ABase, exists_by_expr, calc_distance, coords, update_connection
-from gengine.app.cache import cache_general, cache_achievements_subjects_levels, \
-    cache_achievements_by_subject_for_today, cache_translations
 from sqlalchemy import (
     Table,
     ForeignKey,
@@ -33,19 +20,27 @@ from sqlalchemy import (
     text,
     Column
 , event)
+from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.dialects.postgresql import TIMESTAMP
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import (
     mapper,
     relationship as sa_relationship,
     backref as sa_backref
 )
 from sqlalchemy.sql import bindparam
+from sqlalchemy.sql.ddl import DDL
+from sqlalchemy.sql.schema import UniqueConstraint, Index
+from sqlalchemy.sql.sqltypes import Integer, String
 
+from gengine.app.cache import cache_general, cache_achievements_subjects_levels, \
+    cache_achievements_by_subject_for_today, cache_translations
+from gengine.app.formular import evaluate_condition, evaluate_value_expression, evaluate_string
+from gengine.app.permissions import perm_global_increase_value
+from gengine.base.model import ABase, calc_distance, coords, update_connection
 from gengine.base.settings import get_settings
 from gengine.base.util import dt_now, dt_ago, dt_in, normalize_key, rowproxy2dict, seconds_until_end_of_day
 from gengine.metadata import Base, DBSession
-
-from gengine.app.formular import evaluate_condition, evaluate_value_expression, evaluate_string
 
 log = logging.getLogger(__name__)
 
@@ -672,15 +667,12 @@ class AuthUser(ABase):
         if new_pw!=self.password_hash:
             import argon2
             import crypt
-            import base64
             self.password_salt = crypt.mksalt()+crypt.mksalt()+crypt.mksalt()+crypt.mksalt()+crypt.mksalt()
-            hash = argon2.argon2_hash(new_pw, self.password_salt)
-            self.password_hash = base64.b64encode(hash).decode("UTF-8")
+            self.password_hash = argon2.argon2_hash(new_pw, self.password_salt)
 
     def verify_password(self, pw):
         import argon2
-        import base64
-        check = base64.b64encode(argon2.argon2_hash(pw, self.password_salt)).decode("UTF-8")
+        check = argon2.PasswordHasher.hash(pw, self.password_salt)
         orig = self.password_hash
         is_valid = check == orig
         return is_valid
